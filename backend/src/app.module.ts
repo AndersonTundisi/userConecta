@@ -1,29 +1,33 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+import { UsersModule } from './users/users.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
-    // Carrega o .env
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
     }),
-
-    // Configuração do TypeORM com PostgreSQL
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST!,
-      port: parseInt(process.env.DB_PORT!, 10),
-      username: process.env.DB_USERNAME!,
-      password: process.env.DB_PASSWORD!,
-      database: process.env.DB_DATABASE!,
-      autoLoadEntities: true,
-      synchronize: true,
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get<string>('DB_HOST') || 'localhost',
+        port: configService.get<number>('DB_PORT') || 5432,
+        username: configService.get<string>('DB_USERNAME') || 'userconecta',
+        password: configService.get<string>('DB_PASSWORD') || 'userconecta123',
+        database: configService.get<string>('DB_DATABASE') || 'userconecta_db',
+        autoLoadEntities: true,
+        synchronize: true,
+      }),
     }),
-
-    // Aqui futuramente você vai importar os módulos como AuthModule, UsersModule, etc.
+    UsersModule,
   ],
-  controllers: [],
-  providers: [],
+  controllers: [AppController],   // <<< Incluindo AppController
+  providers: [AppService],         // <<< Incluindo AppService
 })
 export class AppModule {}
