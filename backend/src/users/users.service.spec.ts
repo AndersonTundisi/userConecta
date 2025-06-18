@@ -11,10 +11,10 @@ type MockRepository<T extends ObjectLiteral = any> = Partial<Record<keyof Reposi
 const createMockRepository = <T extends ObjectLiteral = any>(): MockRepository<T> => ({
   find: jest.fn(),
   findOneBy: jest.fn(),
+  create: jest.fn(),
   save: jest.fn(),
   update: jest.fn(),
   delete: jest.fn(),
-  create: jest.fn(),
 });
 
 describe('UsersService', () => {
@@ -72,22 +72,22 @@ describe('UsersService', () => {
     });
   });
 
- describe('findOne', () => {
-  it('should return a user by id', async () => {
-    const user = { id: 1, nome: 'Anderson' };
-    repo.findOneBy!.mockResolvedValue(user);
+  describe('findOne', () => {
+    it('should return a user by id', async () => {
+      const user = { id: 1, nome: 'Anderson' };
+      repo.findOneBy!.mockResolvedValue(user);
 
-    expect(await service.findOne(1)).toEqual(user);
-    expect(repo.findOneBy).toHaveBeenCalledWith({ id: 1 });
+      expect(await service.findOne(1)).toEqual(user);
+      expect(repo.findOneBy).toHaveBeenCalledWith({ id: 1 });
+    });
+
+    it('should throw an error if user not found', async () => {
+      repo.findOneBy!.mockResolvedValue(null);
+
+      await expect(service.findOne(99)).rejects.toThrow(/Usuário.*não encontrado/);
+      expect(repo.findOneBy).toHaveBeenCalledWith({ id: 99 });
+    });
   });
-
-  it('should throw an error if user not found', async () => {
-    repo.findOneBy!.mockResolvedValue(null);
-
-    await expect(service.findOne(99)).rejects.toThrow(/Usuário.*não encontrado/);
-    expect(repo.findOneBy).toHaveBeenCalledWith({ id: 99 });
-  });
-});
 
   describe('update', () => {
     it('should update and return the updated user', async () => {
@@ -104,18 +104,18 @@ describe('UsersService', () => {
   });
 
   describe('remove', () => {
-  it('should delete a user successfully', async () => {
-    repo.delete!.mockResolvedValue({ affected: 1 });
+    it('should delete a user successfully', async () => {
+      repo.delete!.mockResolvedValue({ affected: 1 });
 
-    await expect(service.remove(1)).resolves.toBeUndefined();
-    expect(repo.delete).toHaveBeenCalledWith(1);
-  });
+      await expect(service.remove(1)).resolves.toBeUndefined();
+      expect(repo.delete).toHaveBeenCalledWith(1);
+    });
 
-  it('should throw an error if no user was deleted', async () => {
-    repo.delete!.mockResolvedValue({ affected: 0 });
+    it('should throw an error if no user was deleted', async () => {
+      repo.delete!.mockResolvedValue({ affected: 0 });
 
-    await expect(service.remove(99)).rejects.toThrow('Usuário com id 99 não encontrado para remover');
-    expect(repo.delete).toHaveBeenCalledWith(99);
+      await expect(service.remove(99)).rejects.toThrow('Usuário com id 99 não encontrado para remover');
+      expect(repo.delete).toHaveBeenCalledWith(99);
+    });
   });
 });
-})

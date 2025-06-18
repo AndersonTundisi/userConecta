@@ -15,7 +15,7 @@ export class CreateUserDto {
   @MinLength(6)
   senha: string;
 
-  @ApiProperty({ enum: UserRole, description: 'Perfil de acesso do usuário' })
+  @ApiProperty({ enum: UserRole, description: 'Perfil de acesso do usuário (admin ou user)' })
   @IsEnum(UserRole)
   role: UserRole;
 }

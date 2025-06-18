@@ -31,11 +31,15 @@ export class UsersService {
     return user;
   }
 
+  async findByEmail(email: string): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { email } });
+  }
+
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
     const updateResult = await this.usersRepository.update(id, updateUserDto);
-    
+
     if (updateResult.affected === 0) {
-      throw new NotFoundException(`Usuário com id ${id} não encontrado para atualizar`);
+      throw new NotFoundException(`Usuário com id ${id} não encontrado para atualização`);
     }
 
     return this.findOne(id);
@@ -45,7 +49,7 @@ export class UsersService {
     const result = await this.usersRepository.delete(id);
 
     if (result.affected === 0) {
-      throw new NotFoundException(`Usuário com id ${id} não encontrado para remover`);
+      throw new NotFoundException(`Usuário com id ${id} não encontrado para remoção`);
     }
   }
 }
